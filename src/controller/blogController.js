@@ -21,7 +21,7 @@ const getBlog = async function(req,res){
         let category = req.query.category
         let tags = req.query.tags
         let subcategory = req.query.subcategory
-        let allBlog = await blogModel.find({authorId, category, tags, subcategory, isDeleted:false, isPublished:true})
+        let allBlog = await blogModel.find().select(authorId,category,tags,subcategory)
         res.status(200).send({status:true, msg: allBlog})
         if(!allBlog) res.status(404).send({status:false, msg:"Blogs are not found"})
     }
@@ -31,6 +31,6 @@ const getBlog = async function(req,res){
 
 
 module.exports.createBlog = createBlog
-module.exports.createBlog = createBlog
+module.exports.getBlog = getBlog
 
 
