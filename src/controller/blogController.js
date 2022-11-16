@@ -80,7 +80,6 @@ const updateBlog = async function (req, res) {
     }
 
 
-
 }
 //============================= 5th delete API =======================================================
 const deleteBlog = async function (req,res) {
@@ -124,6 +123,7 @@ const deleteByQuery= async function(req,res){
    }
    }
 
+   
 
 
 module.exports.createBlog = createBlog

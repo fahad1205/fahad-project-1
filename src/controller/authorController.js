@@ -1,6 +1,10 @@
 const authorModel = require("../models/authorModel");
-const { emailValidation } = require("../validator/validation");
+const { emailValidation, isValid } = require("../validator/validation");
 const { nameRegex } = require("../validator/validation");
+const Valid = require("../validator/validation")
+const { isValidObjectId } = require("mongoose")
+const jwt = require("jsonwebtoken")
+
 
 const creatAuthor = async function (req, res) {
     try {
@@ -41,5 +45,38 @@ const creatAuthor = async function (req, res) {
     }
 };
 
+//===================================== 7th-LOGIN API  =======================================================================//
+
+const loginUser = async function (req, res) {
+
+    try {
+        let userName = req.body.email;
+        let password = req.body.password;
+
+        let user = await authorModel.findOne({ email: userName, password: password });
+        if (!user) {
+            return res.status(404).send({ status: false, msg: "username or password is not found" });
+        }
+        
+
+        let token = jwt.sign(
+            {
+                userId: user._id.toString(),
+                batch: "lithium",
+                project: "project1",
+            },
+            "functionup"
+        );
+        res.setHeader("x-api-key", token);
+        res.status(200).send({ status: true, data: token });
+    }
+    catch (error) {
+        res.status(500).send({ msg: error })
+        console.log({ msg: error })
+    }
+};
+
+
+module.exports.loginUser = loginUser
 module.exports.creatAuthor = creatAuthor
 
