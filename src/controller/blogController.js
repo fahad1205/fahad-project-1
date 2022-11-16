@@ -22,20 +22,47 @@ const createBlog = async function(req,res){
 
 //============================= 3rd get API ===============================================================
 
-const getBlog = async function(req,res){
-    try{
-        let authorId = req.query.authorId
-        let category = req.query.category
-        let tags = req.query.tags
-        let subcategory = req.query.subcategory
-        let allBlog = await blogModel.find().select(authorId,category,tags,subcategory)
-        res.status(200).send({status:true, msg: allBlog})
-        if(!allBlog) res.status(404).send({status:false, msg:"Blogs are not found"})
-    }
-    catch(error){res.status(500).send({msg:error})
-    console.log({msg: error})
-}};
+const getBlog = async function (req, res) {
+    try {
+        
+        if (req.query.authorId || req.query.tags || req.query.category || req.query.subCategory) {
+            let authorId = req.query.authorId
+            let tags = req.query.tags
+            let category = req.query.category
+            let subCategory = req.query.subCategory
+            let obj = {}
+            if (authorId) {
+                obj.authorId = authorId
 
+            }
+            if (tags) {
+                obj.tags = tags
+            }
+            if (category) {
+                obj.category = category
+            }
+            if (subCategory) {
+                obj.subCategory = subCategory
+            }
+            obj.isDeleted = false
+            obj.isPublished = true
+           
+            const detail = await blogModel.find(obj)
+            if (!detail) {
+                return res.status(400).send({ status: false, msg: "given data is invalid " })
+            }
+            else {
+                return res.status(200).send({ status: true, msg: "data fetch successfully", data: detail })
+            }
+        }
+
+      
+
+    }
+    catch (err) {
+        return res.status(500).send({ status: false, msg: err.msg })
+    }
+}
 //============================== 4th put API ===========================================================
 
 const updateBlog = async function (req, res) {
