@@ -1,125 +1,135 @@
 const authorModel = require("../models/authorModel");
 const blogModel = require("../models/blogModel")
-const Valid = require("../validator/validation")
-const {isValidObjectId} = require("mongoose")
+const { isValid, isValidObjectId } = require("../validator/validation")
 
-//=========================== 2nd post API ================================================================
 
-const createBlog = async function(req,res){
-    try{
-        let data2 = req.body
-       let authorId = req.body
-        if(!authorId) res.status(400).send({status:false, msg: "author does not exist !!"})
-        if(!isValidObjectId(Id)){
-            return res.status(400).send({status:false,msg:" Pls provide Valid author Id"})
+//=========================== 2nd post API for create blog =================================================
+
+const createBlog = async function (req, res) {
+    try {
+        let data = req.body
+        let { title, body, authorId, category, tags, subcategory } = data
+
+        if (Object.keys(data).length == 0) {
+            return res.status(400).send({ status: false, msg: "Body can not empty" })
         }
-        let savedBlog = await blogModel.create(data2)
-        res.status(201).send({status:true, msg: savedBlog})
+        if (!isValid(authorId)) {
+            res.status(400).send({ status: false, msg: "Please provide author Id" })
+        }
+        if (!isValid(title)) {
+            res.status(400).send({ status: false, msg: "Please provide Title" })
+        }
+        if (!isValid(body)) {
+            res.status(400).send({ status: false, msg: "Please provide Body" })
+        }
+        if (!isValid(tags)) {
+            res.status(400).send({ status: false, msg: "Please provide Tags" })
+        }
+        if (!isValid(category)) {
+            res.status(400).send({ status: false, msg: "Please provide Category" })
+        }
+        if (!isValid(subcategory)) {
+            res.status(400).send({ status: false, msg: "Please provide Subcategory" })
+        }
+       
+        let savedBlog = await blogModel.create(data)
+        res.status(201).send({ status: true, msg: "Blog created", data: savedBlog })
     }
-    catch(error){res.status(500).send({msg:error})
-    console.log({msg: error})
-}};
+    catch (error) {
+        res.status(500).send({ msg: error.message })
+    }
+};
 
-//============================= 3rd get API ===============================================================
+//============================= 3rd get API for get blogs ===============================================
 
 const getBlog = async function (req, res) {
     try {
-        
-        if (req.query.authorId || req.query.tags || req.query.category || req.query.subCategory) {
-            let authorId = req.query.authorId
-            let tags = req.query.tags
-            let category = req.query.category
-            let subCategory = req.query.subCategory
-            let obj = {}
-            if (authorId) {
-                obj.authorId = authorId
 
-            }
-            if (tags) {
-                obj.tags = tags
-            }
-            if (category) {
-                obj.category = category
-            }
-            if (subCategory) {
-                obj.subCategory = subCategory
-            }
-            obj.isDeleted = false
-            obj.isPublished = true
-           
-            const detail = await blogModel.find(obj)
-            if (!detail) {
-                return res.status(400).send({ status: false, msg: "given data is invalid " })
-            }
-            else {
-                return res.status(200).send({ status: true, msg: "data fetch successfully", data: detail })
+        let { authorId, category, tags, subcategory } = req.query
+        let filter = { isDeleted: false, isPublished: true }
+
+        if (authorId) { filter.authorId = authorId }
+
+        if (req.query.authorId) {
+            if (!isValidObjectId(req.query.authorId)) {
+                return res.status(400).send({ status: false, msg: "Please enter valid author Id" })
+            } else {
+                req.query.authorId = authorId
             }
         }
+        if (category) { filter.category = category }
+        if (tags) { filter.tags = tags }
+        if (subcategory) { filter.subcategory = subcategory }
 
-      
-
-    }
-    catch (err) {
-        return res.status(500).send({ status: false, msg: err.msg })
+        const detail = await blogModel.find(filter)
+        if (detail.length == 0) {
+            return res.status(404).send({ status: false, msg: "Blog not Found " })
+        }
+        else {
+            return res.status(200).send({ status: true, msg: "data fetch successfully", data: detail })
+        }
+    } catch (err) {
+        return res.status(500).send({ status: false, msg: err.message })
     }
 }
-//============================== 4th put API ===========================================================
+
+//============================== 4th put API for update =================================================
 
 const updateBlog = async function (req, res) {
 
     try {
-           const blogId = req.params.blogId
-           const checkId = await blogModel.findById(blogId)
-           if(checkId){
-              const requestBody=req.body
-           const {title, body, tags, subcategory ,isPublished}= requestBody
-           if (!Valid.isValidRequestBody(requestBody)) {
-            return res.status(400).send({ status: false, msg: " Pls Provide requestBody" })
-        }
-        if (!Valid.isValid(title)) {
-            return res.status(400).send({ status: false, msg: " Pls Provide title for blog" })
-        }
-        if (!Valid.isValid(body)) {
-            return res.status(400).send({ status: false, msg: "Body is Mandtory" })
-        }
-        if (!Valid.isValid(tags)) {
-            return res.status(400).send({ status: false, msg: "Pls provide tags of blog" })
-        }
-        if (!Valid.isValid(subcategory)) {
-            return res.status(400).send({ status: false, msg: "Pls provide subCategory of blog" })
-        }
-        if (!Valid.isValid(isPublished)) {
-            return res.status(400).send({ status: false, msg: "Pls provide  blog is published or not " })
+        const blogData = req.body
+        const blogId = req.params.blogId
+
+        if (Object.keys(blogData).length == 0) {
+            return res.status(400).send({ status: false, msg: "Please enter details" })
         }
 
-        let savedData= await blogModel.findOneAndUpdate({_id:blogId},{ $set: { "title": req.body.title, "body": req.body.body, "category": req.body.category },
-        $push: { "tags": req.body.tags, "subcategory": req.body.subcategory } }
-        ,{new:true})
 
-        res.status(200).send({status:true,msg:"blog updated successfuly",data:savedData})
-    }else{
-        return res.status(404).send({status:false,msg:"blog id does not exist "})
-    }
+
+        if (!blogId) {
+            return res.status(400).send({ status: false, msg: " Please Provide Blog Id" })
+        }
+        let findBlogId = await blogModel.findById(blogId)
+        if (findBlogId.isDeleted == true) {
+            return res.status(404).send({ status: false, msg: " Blog is deleted" })
+        }
+
+        let updateData = await blogModel.findOneAndUpdate(
+            { _id: blogId },
+            {
+                $set: { "title": blogData.title, "body": blogData.body, "category": blogData.category, publishedAt: new Date(), isPublished: true },
+                $push: { "tags": req.body.tags, "subcategory": req.body.subcategory }
+            }
+            , { new: true, upsert: true })
+
+        res.status(200).send({ status: true, msg: "blog updated successfuly", data: updateData })
 
     } catch (error) {
-        return res.status(500).send({status:false,msg:error.message})
+        return res.status(500).send({ status: false, msg: error.message })
 
     }
-
-
 }
-//============================= 5th delete API =======================================================
-const deleteBlog = async function (req,res) {
 
-    try{
-        let blogId =req.params.blogId
-        let deleteBlog=await blogModel.findByIdAndUpdate({_id:blogId},{$set:{isDeleted:true}},{new: true})
-        res.status(200).send({status:true, msg: deleteBlog})
-        if(!deleteBlog) res.status(404).send({status:false, msg:"Blogs are not found"})
+//============================= 5th delete API with path param =================================================
+
+const deleteBlog = async function (req, res) {
+
+    try {
+        let blogId = req.params.blogId
+        let checkBlogId = await blogModel.findById(blogId)
+
+       if(checkBlogId.isDeleted == true){
+           res.status(404).send({ status: false, msg: "Blog is already deleted" })
+        }
+
+        let deleteBlog = await blogModel.findByIdAndUpdate({ _id: blogId }, { $set: { isDeleted: true, deletedAt: Date.now() } }, { new: true })
+        res.status(200).send({ status: true, msg: "Blog deleted successfully", data: deleteBlog })
     }
-    catch(error){res.status(500).send({msg:error})
-    console.log({msg: error})
-}};
+    catch (error) {
+        res.status(500).send({ msg: error.message })
+    }
+};
 //============================ 6th delete API with query =======================================================
 
 
@@ -150,7 +160,6 @@ const deleteByQuery= async function(req,res){
    }
    }
 
-   
 
 
 module.exports.createBlog = createBlog

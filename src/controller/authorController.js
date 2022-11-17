@@ -1,67 +1,86 @@
 const authorModel = require("../models/authorModel");
-const { emailValidation, isValid } = require("../validator/validation");
-const { nameRegex } = require("../validator/validation");
-const Valid = require("../validator/validation")
-const { isValidObjectId } = require("mongoose")
 const jwt = require("jsonwebtoken")
+const { isValid } = require("../validator/validation");
 
+//============================ 1st post API for create author ===================================
 
 const creatAuthor = async function (req, res) {
     try {
-        let data = req.body
-
+        let data = req.body;
+        let {fname , lname, title, email, password} = data;
+        
 
         if (Object.keys(data).length == 0) {
-            return res.status(400).send({ status: false, msg: "body can not empty" })
+            return res.status(400).send({ status: false, msg: "Body can not empty" })
         }
-        if (!data.fname) {
+
+        if (!isValid(fname)) {
             return res.status(400).send({ status: false, msg: "fname can not found" })
         }
-        if (!nameRegex.test(req.body.fname)) {
+        if (!(/^[a-zA-Z]+$/.test(data.fname.trim()))) {
             return res.status(400).send({ status: false, msg: "fname is invalid" })
         };
-        if (!data.lname) {
+        if (!isValid(lname)) {
             return res.status(400).send({ status: false, msg: "lname can not found" })
         }
-        if (!data.title) {
+        if (!(/^[a-zA-Z]+$/.test(data.lname.trim()))) {
+            return res.status(400).send({ status: false, msg: "lname is invalid" })
+        };
+        if (!isValid(title)) {
             return res.status(400).send({ status: false, msg: "title can not found" })
         }
-        if (!req.body.email) {
+        if (!isValid(email)) {
             return res.status(400).send({ status: false, msg: "email not found" })
         }
-        if (!emailValidation.test(req.body.email)) {
+        if(!(/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(data.email.trim()))) {
             return res.status(400).send({ status: false, msg: "email is invalid" })
         }
-        if (!data.password) {
+        if (!isValid(password)) {
             return res.status(400).send({ status: false, msg: "password not found" })
         }
+        if(!(/^(?=.*[0-9])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{6,16}$/
+        .test(data.password.trim()))) {
+            return res.status(400).send({ status: false, msg: "password is invalid" })
+        }
+        
         let savedData = await authorModel.create(data)
-        res.status(201).send({ status: true, msg: savedData })
+        res.status(201).send({ status: true, msg:"new author is created", data: savedData })
     }
 
     catch (error) {
-        res.status(500).send({ msg: error })
-        console.log({ msg: error })
+        res.status(500).send({ msg: "not working" })
     }
 };
 
-//===================================== 7th-LOGIN API  =======================================================================//
+//===================================== 7th-LOGIN API ====================================================//
 
-const loginUser = async function (req, res) {
+const loginAuthor = async function (req, res) {
 
     try {
+        let data = req.body
         let userName = req.body.email;
         let password = req.body.password;
 
-        let user = await authorModel.findOne({ email: userName, password: password });
-        if (!user) {
+        if (Object.keys(data).length == 0) {
+            return res.status(400).send({ status: false, msg: "Please provide userName and passowrd" })
+        }
+    
+        if (!isValid(userName)) {
+            return res.status(400).send({ status: false, msg: "email not found" })
+        }
+        if (!isValid(password)) {
+            return res.status(400).send({ status: false, msg: "password not found" })
+        }
+
+        let confirmData = await authorModel.findOne({ email: userName, password: password });
+        if (!confirmData) {
             return res.status(404).send({ status: false, msg: "username or password is not found" });
         }
         
 
         let token = jwt.sign(
             {
-                userId: user._id.toString(),
+                userId: userName._id,
                 batch: "lithium",
                 project: "project1",
             },
@@ -77,6 +96,6 @@ const loginUser = async function (req, res) {
 };
 
 
-module.exports.loginUser = loginUser
+module.exports.loginAuthor = loginAuthor
 module.exports.creatAuthor = creatAuthor
 

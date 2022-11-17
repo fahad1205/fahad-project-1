@@ -1,8 +1,7 @@
+const { default: mongoose } = require("mongoose");
 
 
-const emailValidation = /^\s*[a-zA-Z0-9]+([\.\-\_\+][a-zA-Z0-9]+)*@[a-zA-Z]+([\.\-\_][a-zA-Z]+)*(\.[a-zA-Z]{2,3})+\s*$/
-
-const nameRegex = /^[a-zA-Z\-]+$/;
+//===================== for object empty or not ========================================
 
 const isValid = function (value) {
     if (typeof value === 'undefined' || value === null) return false;
@@ -12,13 +11,13 @@ const isValid = function (value) {
     return true;
 }
 
-const isValidRequestBody = function
-    (requestBody) {
-    return Object.keys(requestBody).length >0;
+//====================== for valid object id ===========================================
+
+const isValidObjectId = function(objectId) {
+    return mongoose.Types.ObjectId.isValid(objectId)
 }
 
 
-module.exports.emailValidation = emailValidation
-module.exports.nameRegex = nameRegex
+
 module.exports.isValid = isValid
-module.exports.isValidRequestBody = isValidRequestBody
+module.exports.isValidObjectId = isValidObjectId

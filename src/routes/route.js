@@ -9,11 +9,11 @@ const AuthMid = require("../middleware/middleware")
 
 
 router.post("/authors", AuthorController.creatAuthor)
-router.post("/blogs",AuthMid.authenticate, BlogController.createBlog)
-router.get("/getBlogs", AuthMid.authenticate, BlogController.getBlog)
-router.put("/blogs/:blogId", AuthMid.authenticate,AuthMid.authorise, BlogController.updateBlog)
-router.delete("/blogs/:blogId", AuthMid.authenticate, BlogController.deleteBlog)
-router.delete("/blogs", AuthMid.authenticate, BlogController.deleteByQuery)
-router.post("/login", AuthorController.loginUser)
+router.post("/login", AuthorController.loginAuthor)
+router.post("/blogs",AuthMid.authentication, BlogController.createBlog)
+router.get("/getBlogs", AuthMid.authentication, BlogController.getBlog)
+router.put("/blogs/:blogId", AuthMid.authentication,AuthMid.authorizetion, BlogController.updateBlog)
+router.delete("/blogs/:blogId", AuthMid.authentication,AuthMid.authorizetion, BlogController.deleteBlog)
+router.delete("/blogs", AuthMid.authentication, BlogController.deleteByQuery)
 
 module.exports = router;
