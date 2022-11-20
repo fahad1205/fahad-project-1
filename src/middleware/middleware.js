@@ -39,7 +39,7 @@ const authorizetion = function (req, res, next) {
         next()
     }
     catch (error) {
-        res.status(500).send({ msg: error })
+        res.status(500).send({ msg: error , staus: "false" })
     }
 };
 

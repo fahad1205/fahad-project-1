@@ -17,7 +17,11 @@ const isValidObjectId = function(objectId) {
     return mongoose.Types.ObjectId.isValid(objectId)
 }
 
+const nameRegex=  /^[a-zA-Z]+$/
 
+const emailRegex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/
 
-module.exports.isValid = isValid
-module.exports.isValidObjectId = isValidObjectId
+const passRegex = /^(?=.*[0-9])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{6,16}$/
+
+module.exports = {isValid,isValidObjectId, nameRegex, emailRegex, passRegex}
+

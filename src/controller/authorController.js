@@ -1,45 +1,60 @@
-const authorModel = require("../models/authorModel");
+const authorModel = require("../models/authorModel")
 const jwt = require("jsonwebtoken")
-const { isValid } = require("../validator/validation");
+const { nameRegex , emailRegex , passRegex } = require("../validator/validation");
+const { findOne } = require("../models/authorModel")
 
 //============================ 1st post API for create author ===================================
 
 const creatAuthor = async function (req, res) {
     try {
-        let data = req.body;
-        let {fname , lname, title, email, password} = data;
+        let data = req.body; 
+        let {fname , lname, title, email, password} = req.body;
         
 
         if (Object.keys(data).length == 0) {
-            return res.status(400).send({ status: false, msg: "Body can not empty" })
+            return res.status(400).send({ status: false, msg: "Body can not be empty" })
         }
 
-        if (!isValid(fname)) {
-            return res.status(400).send({ status: false, msg: "fname can not found" })
+        if (!fname || fname == "") {
+            return res.status(400).send({ status: false, msg: "please provide fname" })
         }
-        if (!(/^[a-zA-Z]+$/.test(data.fname.trim()))) {
+        if (!nameRegex.test(fname)) {
             return res.status(400).send({ status: false, msg: "fname is invalid" })
         };
-        if (!isValid(lname)) {
-            return res.status(400).send({ status: false, msg: "lname can not found" })
+        if (!lname || lname == "") {
+            return res.status(400).send({ status: false, msg: "please provide lname" })
         }
-        if (!(/^[a-zA-Z]+$/.test(data.lname.trim()))) {
+        if (!nameRegex.test(lname)) {
             return res.status(400).send({ status: false, msg: "lname is invalid" })
         };
-        if (!isValid(title)) {
-            return res.status(400).send({ status: false, msg: "title can not found" })
+        if (!title || title.length === 0) {
+            return res.status(400).send({ status: false, msg: "please provide title " })
         }
-        if (!isValid(email)) {
-            return res.status(400).send({ status: false, msg: "email not found" })
+
+        if(title){
+        if (!(["Mr", "Mrs", "Miss"].includes(title))){
+            return res.status(400).send({ status: false, msg: "please provide valid title" })
         }
-        if(!(/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(data.email.trim()))) {
+        }
+
+         if (!email || email=="") {
+            return res.status(400).send({ status: false, msg: "please provide email" })
+        }
+        if(!emailRegex.test(email)) {
             return res.status(400).send({ status: false, msg: "email is invalid" })
         }
-        if (!isValid(password)) {
+
+        if(email){
+         let validateEmail = await authorModel.findOne({ email: email})
+        if(validateEmail){
+                return res.satus(400).send({msg:"email already registered"})
+            }
+        }
+
+        if (!password || password == "") {
             return res.status(400).send({ status: false, msg: "password not found" })
         }
-        if(!(/^(?=.*[0-9])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{6,16}$/
-        .test(data.password.trim()))) {
+        if(!passRegex.test(password)) {
             return res.status(400).send({ status: false, msg: "password is invalid" })
         }
         
@@ -51,6 +66,8 @@ const creatAuthor = async function (req, res) {
         res.status(500).send({ msg: "not working" })
     }
 };
+
+
 
 //===================================== 7th-LOGIN API ====================================================//
 
@@ -65,10 +82,10 @@ const loginAuthor = async function (req, res) {
             return res.status(400).send({ status: false, msg: "Please provide userName and passowrd" })
         }
     
-        if (!isValid(userName)) {
+        if (!userName || userName == "") {
             return res.status(400).send({ status: false, msg: "email not found" })
         }
-        if (!isValid(password)) {
+        if (!password || password== "") {
             return res.status(400).send({ status: false, msg: "password not found" })
         }
 
